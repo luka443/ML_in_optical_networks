@@ -54,6 +54,12 @@ def test(model, dataset, criterion):
 def train(model, train_x, train_y, optimizer, criterion):
     model.train()
     model.zero_grad()
+
+    if isinstance(model, RNN):
+        # Reshape the input for RNN
+        batch_size, channels, height, width = train_x.size()
+        train_x = train_x.view(batch_size, height, width)  # Reshape to [batch_size, seq_len, input_size]
+
     _, probs = model(train_x)
     loss = criterion(probs, train_y)
     _, pred = torch.max(probs, dim=1)
@@ -62,6 +68,7 @@ def train(model, train_x, train_y, optimizer, criterion):
     loss.backward()
     optimizer.step()
     return labels, predi, loss.item()
+
 
 
 class Logger(object):
@@ -85,6 +92,12 @@ def main(args):
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=True)
 
     models = {"CNN": CNN, "MLP": MLP, "RNN": RNN}
+    # In train_test.py
+    if args.model == "RNN":
+        model = RNN(input_size=120, hidden_size=128, num_layers=2, num_classes=6)
+    else:
+        model = models[args.model]()
+
     model = models[args.model]()
     if torch.cuda.is_available():
         model = model.cuda()
