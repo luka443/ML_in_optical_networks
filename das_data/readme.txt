@@ -1,3 +1,5 @@
+Data is to big to put it on github download it from link in main readme
+
 all 
 01_background  2946
 02_dig         2512
