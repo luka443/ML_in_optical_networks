@@ -2,6 +2,9 @@
 
 * We are using https://github.com/BJTUSensor/Phi-OTDR_dataset_and_codes dataset
 
+## Project Structure
+
+```
 optical-network-fault-detection/
 │
 ├── das_data/                 # Directory for datasets
@@ -9,8 +12,9 @@ optical-network-fault-detection/
 │   ├── mlp.py                # MLP model definition
 │   ├── cnn.py                # CNN model definition
 │   └── rnn.py                # RNN model definition
-├── train_test.py             # Script for trainingand testing
+├── train_test.py             # Script for training and testing
 └── README.md                 # Project README
+```
 
 
   ## How to run
