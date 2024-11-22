@@ -18,6 +18,7 @@ from get_data import MyDataset
 from neural_network_models.cnn_model import CNN
 from neural_network_models.mlp_model import MLP
 from neural_network_models.rnn_model import RNN
+from neural_network_models.cnn_lstm_model import CNN_LSTM
 
 def test(model, dataset, criterion):
     model.eval()
@@ -91,7 +92,7 @@ def main(args):
     test_dataset = MyDataset(args.root2, args.txtpath2, transform=None)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=True)
 
-    models = {"CNN": CNN, "MLP": MLP, "RNN": RNN}
+    models = {"CNN": CNN, "MLP": MLP, "RNN": RNN, "CNN_LSTM": CNN_LSTM}
     # In train_test.py
     if args.model == "RNN":
         model = RNN(input_size=120, hidden_size=128, num_layers=2, num_classes=6)
@@ -138,15 +139,55 @@ def main(args):
         test_loss_list.append(loss_score)
         if epoch == args.epochs-1:  
             torch.save(model, 'model.pth')
-            the_model = torch.load('model.pth', weights_only=True)
+            the_model = torch.load('model.pth', weights_only=False)
             acc_score, loss_score, NAR, feature_list = test(the_model, test_loader, criterion)
             print("Epoch %d Train_accuracy %.3f Train_loss %.3f Val_accuracy %.3f Val_loss %.3f "              
                 % (epoch, taccuracy, loss, acc_score, loss_score))
-            feature_list = feature_list.detach().numpy()
+            if isinstance(feature_list, torch.Tensor):
+                feature_list = feature_list.detach().numpy()
             np.savetxt('feature_data.csv', feature_list, delimiter=',')  
+            draw_result(C)
             
             print('train totally using %.3f seconds ', train_time)
     
+
+def draw_result(C):
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111)
+    df = pd.DataFrame(C)
+    sns.heatmap(df, fmt='g', annot=True, robust=True,
+                annot_kws={'size': 10},
+                xticklabels=['background', 'digging', 'knocking', 'watering', 'shaking', 'walking'],
+                yticklabels=['background', 'digging', 'knocking', 'watering', 'shaking', 'walking'],
+                cmap= 'Blues')
+    ax.set_xlabel('Predicted label', fontsize=15)
+    ax.set_ylabel('True label', fontsize=15) 
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=15)
+    plt.savefig('./CNN_confusion_matrix.jpg')
+    plt.show()
+
+
+    Acc = (C[0][0] + C[1][1] + C[2][2] + C[3][3] + C[4][4] + C[5][5]) / sum(C[0] + C[1] + C[2] + C[3] + C[4] + C[5])
+    print('acc: %.4f' % Acc)
+    NAR = (sum(C[0]) - C[0][0]) / sum(C[:,1]+C[:,2]+C[:,3]+C[:,4]+C[:,5])
+    print('NAR: %.4f' % NAR)
+    FNR = (sum(C[:,0]) - C[0][0]) / sum(C[1]+C[2]+C[3]+C[4]+C[5])
+    print('FNR: %.4f' % FNR)
+    column_sum = np.sum(C,axis=0)
+    print(column_sum)
+    row_sum =np.sum(C,axis=1)
+    print(row_sum)
+
+    for i in range(1, 6):
+        Precision = C[i - 1][i - 1] / column_sum[i - 1]
+        Recall = C[i - 1][i - 1] / row_sum[i - 1]
+        F1=2*Precision*Recall/(Precision+Recall)
+        print('precision_%d: %.3f' % (i, Precision))
+        print('Recall_%d: %.3f' % (i, Recall))
+        print('F1_%d: %.3f' % (i, F1))
 
 if __name__ == "__main__":
 
@@ -169,7 +210,7 @@ if __name__ == "__main__":
                         help="type of model to use for classification")
     parser.add_argument("--lr", type=float, default=0.01,
                         help="learning rate")
-    parser.add_argument("--epochs", type=int, default=10,
+    parser.add_argument("--epochs", type=int, default=15,
                         help="number of training epochs")
     parser.add_argument("--batch_size", type=int, default=100,
                         help="batch size")
