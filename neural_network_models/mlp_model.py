@@ -40,4 +40,5 @@ class MLP(nn.Module):
         
         feature = x  # Storing features for later use
         output = self.fc4(x)
+        
         return feature, output

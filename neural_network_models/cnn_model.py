@@ -3,7 +3,7 @@ import torch.nn as nn
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
-        self.conv1 = nn.Sequential(             # input shape (1,10000,12)
+        self.conv1 = nn.Sequential(
             nn.Conv2d(
                 in_channels=1,  # input height
                 out_channels=5,  # n_filters
@@ -19,7 +19,8 @@ class CNN(nn.Module):
             nn.ReLU(),                             # activation
             nn.MaxPool2d(kernel_size=2),                      # output shape (10,10,4)
         )
-        self.out = nn.Linear(10 * 10 * 4, 6)      # fully connected layer, output 6 classes
+        self.out = nn.Linear(10 * 10 * 4, 6)      # fully connected layer, output 6 classes warstwy 3 zanurzenie, okres czasowy
+
 
     def forward(self, x):
         x = self.conv1(x)
@@ -27,4 +28,5 @@ class CNN(nn.Module):
         x = x.view(x.size(0), -1)
         feature = x
         output = self.out(x)
+
         return feature, output
