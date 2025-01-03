@@ -7,8 +7,8 @@ class CNN(nn.Module):
             nn.Conv2d(
                 in_channels=1,  # input height
                 out_channels=5,  # n_filters
-                kernel_size=(200, 3),  # filter size
-                stride=(50, 1),  # filter movement/step
+                kernel_size=(220, 3),  # filter size
+                stride=(40, 1),  # filter movement/step
                 padding=1,
             ),
             nn.ReLU(),
